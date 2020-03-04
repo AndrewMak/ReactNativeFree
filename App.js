@@ -9,7 +9,6 @@ import {
   createStackNavigator,
   createAppContainer
 } from 'react-navigation';
-import SplashScreen from './src/screens/Splash/SplashScreen';
 
 class App extends React.Component {
   render() {
