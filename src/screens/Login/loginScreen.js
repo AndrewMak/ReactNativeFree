@@ -1,42 +1,106 @@
-import React, { useState } from "react";
-import styles from "./style";
-import { Keyboard, Text, View, TextInput, TouchableWithoutFeedback, Alert, KeyboardAvoidingView } from 'react-native';
-import { Button } from 'react-native-elements';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
-export default function LoginScreen({ navigation }) {
+import { StatusBar, AsyncStorage } from 'react-native';
+import { StackActions, NavigationActions } from 'react-navigation';
+const api = {};
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+import {
+  Container,
+  Logo,
+  Input,
+  ErrorMessage,
+  Button,
+  ButtonText,
+  SignUpLink,
+  SignUpLinkText,
+} from './style';
 
+export default class LoginScreen extends Component {
+  static navigationOptions = {
+    header: null,
+  };
 
-  async function onLoginPress() {
-    if (password == 'admin' && username == 'admin') {
-      navigation.navigate('Home');
+  static propTypes = {
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+      dispatch: PropTypes.func,
+    }).isRequired,
+  };
+
+  state = {
+    email: 'admin',
+    password: 'admin',
+    error: '',
+  };
+
+  handleEmailChange = (email) => {
+    this.setState({ email });
+  };
+
+  handlePasswordChange = (password) => {
+    this.setState({ password });
+  };
+
+  handleCreateAccountPress = () => {
+    this.props.navigation.navigate('Register');
+  };
+
+  handleSignInPress = async () => {
+    if (this.state.email.length === 0 || this.state.password.length === 0) {
+      this.setState({ error: 'Preencha usuário e senha para continuar!' }, () => false);
     } else {
-      Alert.alert(
-        'Erro',
-        `Login/Senha invalidos!`,
-      );
+      try {
+        // const response = await api.post('/sessions', {
+        //   email: this.state.email,
+        //   password: this.state.password,
+        // });
+
+        // await AsyncStorage.setItem('@AirBnbApp:token', response.data.token);
+        if (this.state.email == 'admin' && this.state.password == 'admin') {
+          const resetAction = StackActions.reset({
+            index: 0,
+            actions: [
+              NavigationActions.navigate({ routeName: 'Home' }),
+            ],
+          });
+          this.props.navigation.dispatch(resetAction);
+        } else { this.setState({ error: 'Houve um problema com o login, verifique suas credenciais!' }); }
+      } catch (_err) {
+        console.tron.log(_err);
+        this.setState({ error: 'Houve um problema com o login, verifique suas credenciais!' });
+      }
     }
+  };
+
+  render() {
+    return (
+      <Container>
+        <StatusBar hidden />
+        {/* <Logo source={require('../../images/airbnb_logo.png')} resizeMode="contain" /> */}
+        <Input
+          placeholder="Endereço de e-mail"
+          value={this.state.email}
+          onChangeText={this.handleEmailChange}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Input
+          placeholder="Senha"
+          value={this.state.password}
+          onChangeText={this.handlePasswordChange}
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
+        />
+        {this.state.error.length !== 0 && <ErrorMessage>{this.state.error}</ErrorMessage>}
+        <Button onPress={this.handleSignInPress}>
+          <ButtonText>Entrar</ButtonText>
+        </Button>
+        <SignUpLink onPress={this.handleCreateAccountPress}>
+          <SignUpLinkText>Criar conta grátis</SignUpLinkText>
+        </SignUpLink>
+      </Container>
+    );
   }
-  return (   
-     <>
-    <KeyboardAvoidingView style={styles.containerView} behavior="padding">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.loginScreenContainer}>
-          <View style={styles.loginFormView}>
-            <Text style={styles.logoText}>Gluten Free</Text>
-            <TextInput value={username} onChangeText={setUsername} placeholder="Username" placeholderColor="#c4c3cb" style={styles.loginFormTextInput} />
-            <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderColor="#c4c3cb" style={styles.loginFormTextInput} secureTextEntry={true} />
-            <Button
-              buttonStyle={styles.loginButton}
-              onPress={() => onLoginPress()}
-              title="Login"
-            />
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-    </>
-  );
 }
